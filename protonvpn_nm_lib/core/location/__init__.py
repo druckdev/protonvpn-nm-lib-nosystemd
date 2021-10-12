@@ -18,7 +18,7 @@ class CurrentLocation:
     @property
     def longitude(self):
         return self.__long
-    
+
     @property
     def country_code(self):
         return self.__country

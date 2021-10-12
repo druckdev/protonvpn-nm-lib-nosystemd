@@ -85,6 +85,7 @@ PROTON_XDG_CACHE_HOME = os.path.join(XDG_CACHE_HOME, "protonvpn")
 PROTON_XDG_CONFIG_HOME = os.path.join(XDG_CONFIG_HOME, "protonvpn")
 PROTON_XDG_CACHE_HOME_LOGS = os.path.join(PROTON_XDG_CACHE_HOME, "logs")
 PROTON_XDG_CACHE_HOME_STREAMING_ICONS = os.path.join(PROTON_XDG_CACHE_HOME, "streaming_icons")
+PROTON_XDG_CACHE_HOME_NOTIFICATION_ICONS = os.path.join(PROTON_XDG_CACHE_HOME, "notification_icons")
 XDG_CONFIG_SYSTEMD = os.path.join(XDG_CONFIG_HOME, "systemd")
 XDG_CONFIG_SYSTEMD_USER = os.path.join(XDG_CONFIG_SYSTEMD, "user")
 TEMPLATES = os.path.join(PWD, "templates")
@@ -118,6 +119,9 @@ CLIENT_CONFIG = os.path.join(
 )
 STREAMING_SERVICES = os.path.join(
     PROTON_XDG_CACHE_HOME, "streaming_services.json"
+)
+NOTIFICATIONS_FILE_PATH = os.path.join(
+    PROTON_XDG_CACHE_HOME, "notification_cache.json"
 )
 STREAMING_ICONS_CACHE_TIME_PATH = os.path.join(
     PROTON_XDG_CACHE_HOME, "streaming_icons_cache.json"
