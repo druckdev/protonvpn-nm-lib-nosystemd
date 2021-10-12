@@ -1,6 +1,6 @@
 # Maintainer: Proton Technologies AG <opensource@proton.me>
 pkgname=python-protonvpn-nm-lib
-pkgver=3.5.0
+pkgver=3.6.0
 pkgrel=1
 pkgdesc="Official ProtonVPN NetworkManager library."
 arch=("any")
