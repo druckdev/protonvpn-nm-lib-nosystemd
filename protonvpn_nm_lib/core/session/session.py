@@ -12,7 +12,7 @@ from ...constants import (API_METADATA_FILEPATH, API_URL, APP_VERSION,
                           PROTON_XDG_CACHE_HOME_STREAMING_ICONS,
                           STREAMING_ICONS_CACHE_TIME_PATH, STREAMING_SERVICES)
 from ...enums import (APIEndpointEnum, KeyringEnum, KillswitchStatusEnum,
-                      UserSettingStatusEnum)
+                      UserSettingStatusEnum, NotificationStatusEnum, NotificationEnum)
 from ...exceptions import (API403Error, API5002Error, API5003Error,
                            API8002Error, API9001Error, API10013Error,
                            APISessionIsNotValidError, APITimeoutError,
@@ -180,12 +180,12 @@ class APISession:
     """
 
     # Probably would be better to have that somewhere else
-    FULL_CACHE_TIME_EXPIRE = 180 * 60  # 180min in seconds
+    FULL_CACHE_TIME_EXPIRE = 3 * (60 * 60)  # 3h in seconds
     STREAMING_SERVICES_TIME_EXPIRE = FULL_CACHE_TIME_EXPIRE
     CLIENT_CONFIG_TIME_EXPIRE = FULL_CACHE_TIME_EXPIRE
-    STREAMING_ICON_TIME_EXPIRE = 480 * 60  # 480min in seconds
+    STREAMING_ICON_TIME_EXPIRE = 8 * (60 * 60)  # 8h in seconds
+    NOTIFICATIONS_TIME_EXPIRE = 12 * (60 * 60)   # 12h in seconds
     LOADS_CACHE_TIME_EXPIRE = 15 * 60  # 15min in seconds
-    NOTIFICATIONS_TIME_EXPIRE = (60 * 60) * 24  # 24h in seconds
     RANDOM_FRACTION = 0.22  # Generate a value of the timeout, +/- up to 22%, at random
 
     def __init__(self, api_url=None, enforce_pinning=True):
@@ -620,6 +620,14 @@ class APISession:
         except: # noqa
             pass
 
+        # Should try to fetch every +-3h, with an interval of +-12h
+        # This ensure that if the previous fetch failed,
+        # the client won't have to wait again 12h for retry but rather try again later
+        try:
+            self._notifications
+        except: # noqa
+            pass
+
         return self.__clientconfig
 
     @ErrorStrategyNormalCall
@@ -754,7 +762,9 @@ class APISession:
             return True
 
     def get_all_notifications(self):
-        return self._notifications.get_all_notifications()
+        return self._update_notification_status(
+            self._notifications.get_all_notifications()
+        )
 
     def get_notifications_by_type(self, notification_type):
         """Get specific notification object
@@ -765,7 +775,30 @@ class APISession:
         Returns:
             BaseNotification instance
         """
-        return self._notifications.get_notification(notification_type)
+        if not isinstance(notification_type, str):
+            notification_type = notification_type.value
+
+        return self._update_notification_status(
+            self._notifications.get_notification(notification_type)
+        )
+
+    def _update_notification_status(self, notification):
+        event_notification = ExecutionEnvironment().settings.event_notification
+
+        # If only one is available then it means that it's the empty one
+        if not isinstance(notification, list) and notification.notification_type == NotificationEnum.EMPTY.value: # noqa
+            if  event_notification != NotificationStatusEnum.UNKNOWN: # noqa
+                ExecutionEnvironment().settings.event_notification = NotificationStatusEnum.UNKNOWN # noqa
+
+            return notification
+
+        # If the notification status is unknown, then it means that it is the first time
+        # that this notifications is being loaded, and thus the status
+        # should be changed to not opened so that clients have a notification element
+        if event_notification == NotificationStatusEnum.UNKNOWN:
+            ExecutionEnvironment().settings.event_notification = NotificationStatusEnum.NOT_OPENED # noqa
+
+        return notification
 
     @ErrorStrategyNormalCall
     def get_location_data(self):
