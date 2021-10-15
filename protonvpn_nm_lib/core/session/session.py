@@ -594,6 +594,14 @@ class APISession:
                     e
                 ))
 
+            # Should try to fetch every +-3h, with an interval of +-12h
+            # This ensure that if the previous fetch failed,
+            # the client won't have to wait again 12h for retry but rather try again later
+            try:
+                self._notifications
+            except: # noqa
+                pass
+
         return True
 
     @property
@@ -617,14 +625,6 @@ class APISession:
 
         try:
             self.update_client_config_if_needed()
-        except: # noqa
-            pass
-
-        # Should try to fetch every +-3h, with an interval of +-12h
-        # This ensure that if the previous fetch failed,
-        # the client won't have to wait again 12h for retry but rather try again later
-        try:
-            self._notifications
         except: # noqa
             pass
 
