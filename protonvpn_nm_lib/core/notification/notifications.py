@@ -33,8 +33,9 @@ class NotificationData:
 
     def get_notification(self, notification_type):
         try:
-            _data = self.__data.get("Notifications", None).pop()
-        except (IndexError, AttributeError):
+            _data = self.__data.get("Notifications", None)[0]
+        except (IndexError, AttributeError) as e:
+            logger.exception(e)
             _data = {}
 
         return BaseNotificationType.factory(
@@ -44,13 +45,12 @@ class NotificationData:
 
     def get_all_notifications(self):
         try:
-            _data = self.__data.get("Notifications", None).pop()
-        except (IndexError, AttributeError):
+            _data = self.__data.get("Notifications", None)[0]
+        except (IndexError, AttributeError) as e:
+            logger.exception(e)
             _data = {}
 
-        return BaseNotificationType.factory(
-            _data
-        )
+        return BaseNotificationType.factory(_data)
 
     @property
     def notifications_timestamp(self):
@@ -88,7 +88,7 @@ class BaseNotificationType(SubclassesMixin):
 
     @property
     @abstractmethod
-    def can_be_displyed():
+    def can_be_displayed():
         raise NotImplementedError("Should be implemented")
 
     @property
@@ -117,7 +117,7 @@ class BaseNotificationType(SubclassesMixin):
 
     @property
     def pill(self):
-        return self.panel.get("IncentivePrice", None)
+        return self.panel.get("Pill", None)
 
     @property
     def picture_url(self):
@@ -136,12 +136,16 @@ class BaseNotificationType(SubclassesMixin):
         return self.panel.get("FeaturesFooter", None)
 
     @property
-    def button(self):
-        return self.panel.get("Button", {})
+    def button_text(self):
+        return self.button.get("Text", None)
+
+    @property
+    def button_url(self):
+        return self.button.get("URL", None)
 
     @property
     def page_footer(self):
-        return self.panel.get("Button", None)
+        return self.panel.get("PageFooter", None)
 
     @property
     def offer(self):
@@ -150,6 +154,10 @@ class BaseNotificationType(SubclassesMixin):
     @property
     def panel(self):
         return self.offer.get("Panel", {})
+
+    @property
+    def button(self):
+        return self.panel.get("Button", {})
 
 
 class EmptyNotificationObject(BaseNotificationType):
@@ -165,8 +173,8 @@ class EmptyNotificationObject(BaseNotificationType):
         super().__init__(data)
 
     @property
-    def can_be_displyed(self):
-        return None
+    def can_be_displayed(self):
+        return False
 
 
 class BlackfridayNotification(BaseNotificationType):
@@ -177,6 +185,44 @@ class BlackfridayNotification(BaseNotificationType):
         super().__init__(data)
         if self.can_be_displayed:
             self.__cache_icons()
+
+    @property
+    def incentive(self):
+        _incentive = self.panel.get("Incentive", None)
+        if not _incentive:
+            return None
+
+        return _incentive.replace(" ", "\u00a0")
+
+    @property
+    def incentive_price(self):
+        _incentive_price = self.panel.get("IncentivePrice", None)
+        if not _incentive_price:
+            return None
+
+        return _incentive_price.replace("/", "/\u2060")
+
+    @property
+    def incentive_template_index_start(self):
+        return int(self.incentive.find("%IncentivePrice%"))
+
+    @property
+    def features(self):
+        features = self.panel.get("Features", None)
+        if not features:
+            return []
+
+        _f = []
+        for feature_dict in features:
+            feature_dict.get("IconURL", None)
+            _f.append(
+                (
+                    feature_dict.get("Text", None),
+                    feature_dict.get("IconURL", None)
+                )
+            )
+
+        return _f
 
     @property
     def can_be_displayed(self):
@@ -195,13 +241,17 @@ class BlackfridayNotification(BaseNotificationType):
         import re
 
         icon_tuple_collection = set()
-        pattern = re.compile(r".+\/((\w+-\w+)\.(png|jpeg|jpg))")
+        pattern = re.compile(r"[\/]{1}([a-zA-Z0-9-]+\.(png|jpeg|jpg))")
         self.__recursive_search_for_icons(self.offer, icon_tuple_collection, pattern)
 
         if not os.path.isdir(PROTON_XDG_CACHE_HOME_NOTIFICATION_ICONS):
             os.makedirs(PROTON_XDG_CACHE_HOME_NOTIFICATION_ICONS)
 
         if all(list(map(self.__check_if_icons_exist, icon_tuple_collection))):
+            self.icon_paths = {
+                os.path.join(PROTON_XDG_CACHE_HOME_NOTIFICATION_ICONS, icon_tuple[0])
+                for icon_tuple in icon_tuple_collection
+            }
             return
 
         with concurrent.futures.ThreadPoolExecutor() as executor:
@@ -254,16 +304,16 @@ class BlackfridayNotification(BaseNotificationType):
         if isinstance(data, dict):
             for k, v in data.items():
                 if isinstance(v, str):
-                    match = pattern.match(v)
-                    if match:
-                        icon_collection.add((match.group(1), v))
+                    pattern_result = pattern.search(v)
+                    if pattern_result:
+                        icon_collection.add((pattern_result.group(1), v))
                 elif isinstance(v, (dict, list)):
                     self.__recursive_search_for_icons(v, icon_collection, pattern)
         elif isinstance(data, list):
             for v in data:
                 if isinstance(v, str):
-                    match = pattern.match(v)
-                    if match:
-                        icon_collection.add((match.group(1), v))
+                    pattern_result = pattern.search(v)
+                    if pattern_result:
+                        icon_collection.add((pattern_result.group(1), v))
                 elif isinstance(v, (list, dict)):
                     self.__recursive_search_for_icons(v, icon_collection, pattern)
