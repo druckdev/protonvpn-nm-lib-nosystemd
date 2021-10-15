@@ -6,9 +6,13 @@ from ...constants import (API_METADATA_FILEPATH, API_URL, APP_VERSION,
                           CACHED_SERVERLIST, CLIENT_CONFIG,
                           CONNECTION_STATE_FILEPATH,
                           LAST_CONNECTION_METADATA_FILEPATH,
-                          PROTON_XDG_CACHE_HOME, PROTON_XDG_CACHE_HOME_LOGS,
+                          NOTIFICATIONS_FILE_PATH, PROTON_XDG_CACHE_HOME,
+                          PROTON_XDG_CACHE_HOME_LOGS,
+                          PROTON_XDG_CACHE_HOME_NOTIFICATION_ICONS,
+                          PROTON_XDG_CACHE_HOME_STREAMING_ICONS,
                           STREAMING_ICONS_CACHE_TIME_PATH, STREAMING_SERVICES)
-from ...enums import KeyringEnum, KillswitchStatusEnum, UserSettingStatusEnum
+from ...enums import (APIEndpointEnum, KeyringEnum, KillswitchStatusEnum,
+                      UserSettingStatusEnum, NotificationStatusEnum, NotificationEnum)
 from ...exceptions import (API403Error, API5002Error, API5003Error,
                            API8002Error, API9001Error, API10013Error,
                            APISessionIsNotValidError, APITimeoutError,
@@ -176,10 +180,11 @@ class APISession:
     """
 
     # Probably would be better to have that somewhere else
-    FULL_CACHE_TIME_EXPIRE = 180 * 60  # 180min in seconds
+    FULL_CACHE_TIME_EXPIRE = 3 * (60 * 60)  # 3h in seconds
     STREAMING_SERVICES_TIME_EXPIRE = FULL_CACHE_TIME_EXPIRE
     CLIENT_CONFIG_TIME_EXPIRE = FULL_CACHE_TIME_EXPIRE
-    STREAMING_ICON_TIME_EXPIRE = 480 * 60  # 480min in seconds
+    STREAMING_ICON_TIME_EXPIRE = 8 * (60 * 60)  # 8h in seconds
+    NOTIFICATIONS_TIME_EXPIRE = 12 * (60 * 60)   # 12h in seconds
     LOADS_CACHE_TIME_EXPIRE = 15 * 60  # 15min in seconds
     RANDOM_FRACTION = 0.22  # Generate a value of the timeout, +/- up to 22%, at random
 
@@ -197,6 +202,7 @@ class APISession:
         self.__clientconfig = None
         self.__streaming_services = None
         self.__streaming_icons = None
+        self.__notification_data = None
 
         # Load session
         try:
@@ -219,21 +225,6 @@ class APISession:
         )
         self.__proton_api.enable_alternative_routing = ExecutionEnvironment()\
             .settings.alternative_routing.value
-
-    def update_alternative_routing(self, newvalue):
-        self.__proton_api.enable_alternative_routing = newvalue
-
-    def is_api_reacheable(self):
-        from proton.exceptions import (ConnectionTimeOutError,
-                                       NewConnectionError, TLSPinningError)
-
-        try:
-            self.__proton_api.api_request("/tests/ping")
-        except (NewConnectionError, ConnectionTimeOutError, TLSPinningError) as e:
-            logger.exception(e)
-            return False
-
-        return True
 
     def __keyring_load_session(self):
         """
@@ -331,7 +322,9 @@ class APISession:
         filepaths_to_remove = [
             CACHED_SERVERLIST, CLIENT_CONFIG, API_METADATA_FILEPATH,
             LAST_CONNECTION_METADATA_FILEPATH, CONNECTION_STATE_FILEPATH,
-            STREAMING_ICONS_CACHE_TIME_PATH, STREAMING_SERVICES
+            STREAMING_ICONS_CACHE_TIME_PATH, STREAMING_SERVICES,
+            PROTON_XDG_CACHE_HOME_STREAMING_ICONS, NOTIFICATIONS_FILE_PATH,
+            PROTON_XDG_CACHE_HOME_NOTIFICATION_ICONS
         ]
         for fp in filepaths_to_remove:
             self.remove_cache(fp)
@@ -359,7 +352,6 @@ class APISession:
 
         This destroys the current session, if any.
         """
-
         # Ensure the session is clean
         try:
             self.logout()
@@ -387,6 +379,7 @@ class APISession:
             self.streaming, self.streaming_icons,
             self._vpn_data
         ]
+        self.get_all_notifications()
 
         return True
 
@@ -409,6 +402,9 @@ class APISession:
     def remove_cache(self, cache_path):
         try:
             os.remove(cache_path)
+        except IsADirectoryError:
+            import shutil
+            shutil.rmtree(cache_path)
         except FileNotFoundError:
             pass
 
@@ -497,28 +493,33 @@ class APISession:
             .__streaming_icons.streaming_icons_timestamp + \
             self.STREAMING_ICON_TIME_EXPIRE * self.__generate_random_component()
 
+    def _update_next_fetch_notifications(self):
+        self.__next_fetch_notifications = self \
+            .__notification_data.notifications_timestamp + \
+            self.NOTIFICATIONS_TIME_EXPIRE * self.__generate_random_component()
+
     @ErrorStrategyNormalCall
     def update_servers_if_needed(self, force=False):
         changed = False
 
-        if (
-            ExecutionEnvironment().settings.killswitch
-            == KillswitchStatusEnum.HARD
-            and not force
-        ):
+        if not self.__ensure_that_api_can_be_reached():
             return
 
         if self.__next_fetch_logicals < time.time() or force:
             # Update logicals
             logger.info("Fetching logicals")
             self.__ensure_that_alt_routing_can_be_skipped()
-            self.__vpn_logicals.update_logical_data(self.__proton_api.api_request('/vpn/logicals'))
+            self.__vpn_logicals.update_logical_data(
+                self.__proton_api.api_request(APIEndpointEnum.LOGICALS.value)
+            )
             changed = True
         elif self.__next_fetch_load < time.time():
             # Update loads
             logger.info("Fetching loads")
             self.__ensure_that_alt_routing_can_be_skipped()
-            self.__vpn_logicals.update_load_data(self.__proton_api.api_request('/vpn/loads'))
+            self.__vpn_logicals.update_load_data(
+                self.__proton_api.api_request(APIEndpointEnum.LOADS.value)
+            )
             changed = True
 
         if changed:
@@ -569,11 +570,7 @@ class APISession:
     def update_client_config_if_needed(self, force=False):
         changed = False
 
-        if (
-            ExecutionEnvironment().settings.killswitch
-            == KillswitchStatusEnum.HARD
-            and not force
-        ):
+        if not self.__ensure_that_api_can_be_reached():
             return
 
         if self.__next_fetch_client_config < time.time() or force:
@@ -581,9 +578,7 @@ class APISession:
             logger.info("Fetching client config")
             self.__ensure_that_alt_routing_can_be_skipped()
             self.__clientconfig.update_client_config_data(
-                self.__proton_api.api_request(
-                    "/vpn/clientconfig"
-                )
+                self.__proton_api.api_request(APIEndpointEnum.CLIENT_CONFIG.value)
             )
             changed = True
 
@@ -625,17 +620,21 @@ class APISession:
         except: # noqa
             pass
 
+        # Should try to fetch every +-3h, with an interval of +-12h
+        # This ensure that if the previous fetch failed,
+        # the client won't have to wait again 12h for retry but rather try again later
+        try:
+            self._notifications
+        except: # noqa
+            pass
+
         return self.__clientconfig
 
     @ErrorStrategyNormalCall
     def update_streaming_data_if_needed(self, force=False):
         changed = False
 
-        if (
-            ExecutionEnvironment().settings.killswitch
-            == KillswitchStatusEnum.HARD
-            and not force
-        ):
+        if not self.__ensure_that_api_can_be_reached():
             return
 
         if self.__next_fetch_streaming_service < time.time() or force:
@@ -643,9 +642,7 @@ class APISession:
             logger.info("Fetching streaming data")
             self.__ensure_that_alt_routing_can_be_skipped()
             self.__streaming_services.update_streaming_services_data(
-                self.__proton_api.api_request(
-                    "/vpn/streamingservices"
-                )
+                self.__proton_api.api_request(APIEndpointEnum.STREAMING_SERVICES.value)
             )
             changed = True
 
@@ -692,11 +689,7 @@ class APISession:
         return self.__streaming_services
 
     def update_streaming_icons_if_needed(self, force=False):
-        if (
-            ExecutionEnvironment().settings.killswitch
-            == KillswitchStatusEnum.HARD
-            and not force
-        ):
+        if not self.__ensure_that_api_can_be_reached():
             return
 
         if self.__next_fetch_streaming_icons < time.time() or force:
@@ -715,12 +708,115 @@ class APISession:
                     e
                 ))
 
+    @property
+    def _notifications(self):
+        if self.__notification_data is None:
+            from ..notification import NotificationData
+
+            self.__notification_data = NotificationData()
+
+            try:
+                with open(NOTIFICATIONS_FILE_PATH, "r") as f:
+                    self.__notification_data.json_loads(f.read())
+            except FileNotFoundError:
+                logger.info("Could not load notifications cache")
+
+            self._update_next_fetch_notifications()
+
+        try:
+            self._update_notifications_if_needed()
+        except: # noqa
+            pass
+
+        return self.__notification_data
+
+    @ErrorStrategyNormalCall
+    def _update_notifications_if_needed(self, force=False):
+        changed = False
+
+        if not self.__ensure_that_api_can_be_reached() and not self.clientconfig.poll_notification_api: # noqa
+            return
+
+        if self.__next_fetch_notifications < time.time() or force:
+            logger.info("Fetching new notifications")
+            self.__notification_data.update_notifications_data(
+                self.__proton_api.api_request(APIEndpointEnum.NOTIFICATIONS.value)
+            )
+            changed = True
+
+        if changed:
+            self._update_next_fetch_notifications()
+            try:
+                with open(NOTIFICATIONS_FILE_PATH, "w") as f:
+                    f.write(self.__notification_data.json_dumps())
+            except Exception as e:
+                # This is not fatal, we only were not capable
+                # of storing the cache.
+                logger.info("Could not save streaming services cache {}".format(
+                    e
+                ))
+
+            # Cache icons for notifications
+            self.get_all_notifications()
+
+            return True
+
+    def get_all_notifications(self):
+        return self._update_notification_status(
+            self._notifications.get_all_notifications()
+        )
+
+    def get_notifications_by_type(self, notification_type):
+        """Get specific notification object
+
+        Args:
+            notification_type (NotificationEnum)
+
+        Returns:
+            BaseNotification instance
+        """
+        if not isinstance(notification_type, str):
+            notification_type = notification_type.value
+
+        return self._update_notification_status(
+            self._notifications.get_notification(notification_type)
+        )
+
+    def _update_notification_status(self, notification):
+        event_notification = ExecutionEnvironment().settings.event_notification
+
+        # If only one is available then it means that it's the empty one
+        if not isinstance(notification, list) and notification.notification_type == NotificationEnum.EMPTY.value: # noqa
+            if  event_notification != NotificationStatusEnum.UNKNOWN: # noqa
+                ExecutionEnvironment().settings.event_notification = NotificationStatusEnum.UNKNOWN # noqa
+
+            return notification
+
+        # If the notification status is unknown, then it means that it is the first time
+        # that this notifications is being loaded, and thus the status
+        # should be changed to not opened so that clients have a notification element
+        if event_notification == NotificationStatusEnum.UNKNOWN:
+            ExecutionEnvironment().settings.event_notification = NotificationStatusEnum.NOT_OPENED # noqa
+
+        return notification
+
     @ErrorStrategyNormalCall
     def get_location_data(self):
         self.__ensure_that_alt_routing_can_be_skipped()
-        response = self.__proton_api.api_request("/vpn/location")
+        response = self.__proton_api.api_request(APIEndpointEnum.LOCATION.value)
         from ..location import CurrentLocation
         return CurrentLocation(response)
+
+    def __ensure_that_api_can_be_reached(self):
+        if (
+            (
+                ExecutionEnvironment().settings.killswitch == KillswitchStatusEnum.HARD
+                and ExecutionEnvironment().connection_backend.get_active_protonvpn_connection()
+            ) or ExecutionEnvironment().settings.killswitch != KillswitchStatusEnum.HARD
+        ):
+            return True
+
+        return False
 
     def __ensure_that_alt_routing_can_be_skipped(self):
         """Check if alternative routing can be skipped.

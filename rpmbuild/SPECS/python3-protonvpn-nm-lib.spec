@@ -1,5 +1,5 @@
 %define unmangled_name protonvpn-nm-lib
-%define version 3.5.0
+%define version 3.6.0
 %define release 1
 
 Prefix: %{_prefix}
@@ -60,6 +60,9 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root)
 
 %changelog
+* Tue Oct 12 2021 Proton Technologies AG <opensource@proton.me> 3.6.0-1
+- Feature: Add notification polling
+
 * Fri Sep 24 2021 Proton Technologies AG <opensource@proton.me> 3.5.0-1
 - Handle human verification
 - Fix: Remove network interfaces upon reboot/shutdown if kill switch is not set to permanent

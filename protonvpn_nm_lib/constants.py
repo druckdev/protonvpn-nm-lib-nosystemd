@@ -8,11 +8,12 @@ import os
 from xdg import BaseDirectory
 
 from .enums import (KillswitchStatusEnum, NetshieldStatusEnum,
-                    NetshieldTranslationEnum, ProtocolEnum,
-                    ProtocolImplementationEnum, SecureCoreStatusEnum,
-                    UserSettingConnectionEnum, UserSettingStatusEnum)
+                    NetshieldTranslationEnum, NotificationStatusEnum,
+                    ProtocolEnum, ProtocolImplementationEnum,
+                    SecureCoreStatusEnum, UserSettingConnectionEnum,
+                    UserSettingStatusEnum)
 
-APP_VERSION = "3.5.0"
+APP_VERSION = "3.6.0"
 API_URL = "https://api.protonvpn.ch"
 
 IPv6_LEAK_PROTECTION_CONN_NAME = "pvpn-ipv6leak-protection"
@@ -54,6 +55,9 @@ CONFIG_STATUSES = [
     UserSettingStatusEnum.DISABLED,
     UserSettingStatusEnum.ENABLED,
     UserSettingStatusEnum.CUSTOM,
+    NotificationStatusEnum.OPENED,
+    NotificationStatusEnum.NOT_OPENED,
+    NotificationStatusEnum.UNKNOWN,
 ]
 USER_CONFIG_TEMPLATE = {
     UserSettingConnectionEnum.DEFAULT_PROTOCOL: ProtocolEnum.UDP,
@@ -69,7 +73,8 @@ USER_CONFIG_TEMPLATE = {
     UserSettingConnectionEnum.NETSHIELD: NetshieldTranslationEnum.DISABLED,
     UserSettingConnectionEnum.SECURE_CORE: SecureCoreStatusEnum.OFF,
     UserSettingConnectionEnum.VPN_ACCELERATOR: UserSettingStatusEnum.ENABLED,
-    UserSettingConnectionEnum.ALTERNATIVE_ROUTING: UserSettingStatusEnum.ENABLED
+    UserSettingConnectionEnum.ALTERNATIVE_ROUTING: UserSettingStatusEnum.ENABLED,
+    UserSettingConnectionEnum.EVENT_NOTIFICATION: NotificationStatusEnum.UNKNOWN
 }
 NETSHIELD_STATUS_DICT = {
     NetshieldTranslationEnum.DISABLED: NetshieldStatusEnum.DISABLED,
@@ -85,6 +90,7 @@ PROTON_XDG_CACHE_HOME = os.path.join(XDG_CACHE_HOME, "protonvpn")
 PROTON_XDG_CONFIG_HOME = os.path.join(XDG_CONFIG_HOME, "protonvpn")
 PROTON_XDG_CACHE_HOME_LOGS = os.path.join(PROTON_XDG_CACHE_HOME, "logs")
 PROTON_XDG_CACHE_HOME_STREAMING_ICONS = os.path.join(PROTON_XDG_CACHE_HOME, "streaming_icons")
+PROTON_XDG_CACHE_HOME_NOTIFICATION_ICONS = os.path.join(PROTON_XDG_CACHE_HOME, "notification_icons")
 XDG_CONFIG_SYSTEMD = os.path.join(XDG_CONFIG_HOME, "systemd")
 XDG_CONFIG_SYSTEMD_USER = os.path.join(XDG_CONFIG_SYSTEMD, "user")
 TEMPLATES = os.path.join(PWD, "templates")
@@ -118,6 +124,9 @@ CLIENT_CONFIG = os.path.join(
 )
 STREAMING_SERVICES = os.path.join(
     PROTON_XDG_CACHE_HOME, "streaming_services.json"
+)
+NOTIFICATIONS_FILE_PATH = os.path.join(
+    PROTON_XDG_CACHE_HOME, "notification_cache.json"
 )
 STREAMING_ICONS_CACHE_TIME_PATH = os.path.join(
     PROTON_XDG_CACHE_HOME, "streaming_icons_cache.json"

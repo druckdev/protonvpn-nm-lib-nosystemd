@@ -1,6 +1,7 @@
 from ... import exceptions
 from ...enums import (DisplayUserSettingsEnum, KillswitchStatusEnum,
-                      ProtocolEnum, ServerTierEnum, UserSettingStatusEnum)
+                      NotificationStatusEnum, ProtocolEnum, ServerTierEnum,
+                      UserSettingStatusEnum)
 from ...logger import logger
 from ..environment import ExecutionEnvironment
 from .settings_backend import SettingsBackend
@@ -266,6 +267,24 @@ class Settings(SettingsBackend):
             self.settings_configurator.set_vpn_accelerator(setting_status)
         except (exceptions.ProtonVPNException, Exception) as e:
             raise Exception(e)
+
+    @property
+    def event_notification(self):
+        """Get event notification setting.
+
+        Returns:
+            NotificationStatusEnum
+        """
+        return self.settings_configurator.get_event_notification()
+
+    @event_notification.setter
+    def event_notification(self, newvalue):
+        """Set event notification.
+
+        Args:
+            newvalue (NotificationStatusEnum)
+        """
+        self.settings_configurator.set_event_notification(newvalue)
 
     def reset_to_default_configs(self):
         """Reset user configuration to default values."""

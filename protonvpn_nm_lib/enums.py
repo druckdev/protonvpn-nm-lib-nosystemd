@@ -1,6 +1,26 @@
 from enum import Enum, IntFlag
 
 
+class APIEndpointEnum(Enum):
+    LOGICALS = "/vpn/logicals"
+    LOADS = "/vpn/loads"
+    CLIENT_CONFIG = "/vpn/clientconfig"
+    STREAMING_SERVICES = "/vpn/streamingservices"
+    NOTIFICATIONS = "/vpn/notifications"
+    LOCATION = "/vpn/location"
+
+
+class NotificationEnum(Enum):
+    EMPTY = "empty"
+    BLACK_FRIDAY = "black_friday"
+
+
+class NotificationStatusEnum(Enum):
+    OPENED = 0
+    NOT_OPENED = 1
+    UNKNOWN = 2
+
+
 class ProtocolEnum(Enum):
     TCP = "tcp"
     UDP = "udp"
@@ -124,6 +144,7 @@ class UserSettingConnectionEnum(Enum):
     SECURE_CORE = "secure_core"
     VPN_ACCELERATOR = "vpn_accelerator"
     ALTERNATIVE_ROUTING = "alternative_routing"
+    EVENT_NOTIFICATION = "event_notification"
 
 
 class ProtonSessionAPIMethodEnum(Enum):
