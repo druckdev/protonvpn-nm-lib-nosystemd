@@ -61,7 +61,7 @@ class SettingsBackend(SubclassesMixin, metaclass=ABCMeta):
 
     @property
     @abstractmethod
-    def protocol(self):
+    def protocol():
         """Get default protocol."""
         pass
 
@@ -85,7 +85,7 @@ class SettingsBackend(SubclassesMixin, metaclass=ABCMeta):
 
     @property
     @abstractmethod
-    def dns_custom_ips(self):
+    def dns_custom_ips():
         """Get user DNS setting."""
         pass
 
@@ -97,7 +97,7 @@ class SettingsBackend(SubclassesMixin, metaclass=ABCMeta):
 
     @property
     @abstractmethod
-    def vpn_accelerator(self):
+    def vpn_accelerator():
         """Get user VPN Accelerator setting."""
         pass
 
@@ -105,10 +105,22 @@ class SettingsBackend(SubclassesMixin, metaclass=ABCMeta):
     @abstractmethod
     def vpn_accelerator():
         """Set VPN Accelerator lis."""
-        pass 
+        pass
+
+    @property
+    @abstractmethod
+    def event_notification():
+        """Get event notification setting."""
+        pass
+
+    @event_notification.setter
+    @abstractmethod
+    def event_notification():
+        """Set event notification."""
+        pass
 
     @abstractmethod
-    def reset_to_default_configs(self):
+    def reset_to_default_configs():
         """Reset user configuration to default values."""
         pass
 

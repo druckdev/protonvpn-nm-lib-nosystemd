@@ -8,9 +8,10 @@ import os
 from xdg import BaseDirectory
 
 from .enums import (KillswitchStatusEnum, NetshieldStatusEnum,
-                    NetshieldTranslationEnum, ProtocolEnum,
-                    ProtocolImplementationEnum, SecureCoreStatusEnum,
-                    UserSettingConnectionEnum, UserSettingStatusEnum)
+                    NetshieldTranslationEnum, NotificationStatusEnum,
+                    ProtocolEnum, ProtocolImplementationEnum,
+                    SecureCoreStatusEnum, UserSettingConnectionEnum,
+                    UserSettingStatusEnum)
 
 APP_VERSION = "3.6.0"
 API_URL = "https://api.protonvpn.ch"
@@ -54,6 +55,9 @@ CONFIG_STATUSES = [
     UserSettingStatusEnum.DISABLED,
     UserSettingStatusEnum.ENABLED,
     UserSettingStatusEnum.CUSTOM,
+    NotificationStatusEnum.OPENED,
+    NotificationStatusEnum.NOT_OPENED,
+    NotificationStatusEnum.UNKNOWN,
 ]
 USER_CONFIG_TEMPLATE = {
     UserSettingConnectionEnum.DEFAULT_PROTOCOL: ProtocolEnum.UDP,
@@ -69,7 +73,8 @@ USER_CONFIG_TEMPLATE = {
     UserSettingConnectionEnum.NETSHIELD: NetshieldTranslationEnum.DISABLED,
     UserSettingConnectionEnum.SECURE_CORE: SecureCoreStatusEnum.OFF,
     UserSettingConnectionEnum.VPN_ACCELERATOR: UserSettingStatusEnum.ENABLED,
-    UserSettingConnectionEnum.ALTERNATIVE_ROUTING: UserSettingStatusEnum.ENABLED
+    UserSettingConnectionEnum.ALTERNATIVE_ROUTING: UserSettingStatusEnum.ENABLED,
+    UserSettingConnectionEnum.EVENT_NOTIFICATION: NotificationStatusEnum.UNKNOWN
 }
 NETSHIELD_STATUS_DICT = {
     NetshieldTranslationEnum.DISABLED: NetshieldStatusEnum.DISABLED,

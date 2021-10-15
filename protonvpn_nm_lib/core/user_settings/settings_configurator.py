@@ -14,7 +14,8 @@ from ...enums import (
     ProtocolEnum,
     UserSettingConnectionEnum,
     KillswitchStatusEnum,
-    SecureCoreStatusEnum
+    SecureCoreStatusEnum,
+    NotificationStatusEnum
 )
 
 
@@ -90,6 +91,14 @@ class SettingsConfigurator:
             return user_configs[UserSettingConnectionEnum.VPN_ACCELERATOR]
         except KeyError:
             return USER_CONFIG_TEMPLATE[UserSettingConnectionEnum.ALTERNATIVE_ROUTING]
+
+    def get_event_notification(self):
+        """Event notification get method."""
+        user_configs = self.get_user_configurations()
+        try:
+            return user_configs[UserSettingConnectionEnum.EVENT_NOTIFICATION]
+        except KeyError:
+            return NotificationStatusEnum.UNKNOWN
 
     def set_protocol(self, protocol):
         """Set default protocol method.
@@ -211,6 +220,19 @@ class SettingsConfigurator:
 
         user_configs = self.get_user_configurations()
         user_configs[UserSettingConnectionEnum.VPN_ACCELERATOR] = status
+        self.set_user_configurations(user_configs)
+
+    def set_event_notification(self, status):
+        """Set event notification setting method.
+
+        Args:
+            status (NotificationStatusEnum)
+        """
+        if status not in CONFIG_STATUSES:
+            raise KeyError("Illegal option")
+
+        user_configs = self.get_user_configurations()
+        user_configs[UserSettingConnectionEnum.EVENT_NOTIFICATION] = status
         self.set_user_configurations(user_configs)
 
     def reset_default_configs(self):
