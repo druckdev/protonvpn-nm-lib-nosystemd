@@ -136,6 +136,13 @@ class API8002Error(ProtonSessionWrapperError):
     """
 
 
+class API12087Error(ProtonSessionWrapperError):
+    """Error12087.
+
+    Invalid verification token.
+    """
+
+
 class API85031Error(ProtonSessionWrapperError):
     """Error 85031.
 

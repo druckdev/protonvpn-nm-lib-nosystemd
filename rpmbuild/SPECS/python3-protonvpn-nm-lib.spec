@@ -62,6 +62,7 @@ rm -rf $RPM_BUILD_ROOT
 %changelog
 * Tue Oct 12 2021 Proton Technologies AG <opensource@proton.me> 3.6.0-1
 - Feature: Add notification polling
+- Improve: Human verification at login
 
 * Fri Sep 24 2021 Proton Technologies AG <opensource@proton.me> 3.5.0-1
 - Handle human verification
