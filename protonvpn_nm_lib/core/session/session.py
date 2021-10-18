@@ -12,9 +12,11 @@ from ...constants import (API_METADATA_FILEPATH, API_URL, APP_VERSION,
                           PROTON_XDG_CACHE_HOME_STREAMING_ICONS,
                           STREAMING_ICONS_CACHE_TIME_PATH, STREAMING_SERVICES)
 from ...enums import (APIEndpointEnum, KeyringEnum, KillswitchStatusEnum,
-                      UserSettingStatusEnum, NotificationStatusEnum, NotificationEnum)
+                      NotificationEnum, NotificationStatusEnum,
+                      UserSettingStatusEnum)
 from ...exceptions import (API403Error, API5002Error, API5003Error,
-                           API8002Error, API85031Error, API9001Error, API10013Error,
+                           API8002Error, API9001Error, API10013Error,
+                           API12087Error, API85031Error,
                            APISessionIsNotValidError, APITimeoutError,
                            DefaultOVPNPortsNotFoundError, InsecureConnection,
                            JSONDataError, NetworkConnectionError,
@@ -113,8 +115,15 @@ class ErrorStrategy:
         return self._call_original_function(session, *args, **kwargs)
 
     def _handle_9001(self, error, session, *args, **kwargs):
-        logger.info("Catched 9001 error, raising human verification exception")
         raise API9001Error(error)
+
+    def _handle_85031(self, error, session, *args, **kwargs):
+        logger.info("Catched 85031 error, too many recent login attempts")
+        raise API85031Error(error)
+
+    def _handle_12087(self, error, session, *args, **kwargs):
+        logger.info("Catched 12087 error, Invalid verification token")
+        raise API12087Error(error)
 
 
 class ErrorStrategyLogout(ErrorStrategy):
@@ -154,9 +163,6 @@ class ErrorStrategyAuthenticate(ErrorStrategy):
 
     def _handle_8002(self, error, session, *args, **kwargs):
         raise API8002Error(error)
-
-    def _handle_85031(self, error, session, *args, **kwargs):
-        raise API85031Error(error)
 
 
 class ErrorStrategyRefresh(ErrorStrategy):
@@ -362,7 +368,10 @@ class APISession:
             pass
 
         # (try) to log in
-        self.__proton_api.authenticate(username, password, human_verification)
+        if human_verification:
+            self.__proton_api.human_verification_token = human_verification
+
+        self.__proton_api.authenticate(username, password)
 
         # Order is important here: we first want to set keyrings,
         # then set the class status to avoid inconstistencies
