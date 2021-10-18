@@ -136,6 +136,13 @@ class API8002Error(ProtonSessionWrapperError):
     """
 
 
+class API85031Error(ProtonSessionWrapperError):
+    """Error 85031.
+
+    Too many recent login attempts.
+    """
+
+
 class API9001Error(ProtonSessionWrapperError):
     """Error 9001.
 

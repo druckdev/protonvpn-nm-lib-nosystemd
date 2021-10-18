@@ -14,7 +14,7 @@ from ...constants import (API_METADATA_FILEPATH, API_URL, APP_VERSION,
 from ...enums import (APIEndpointEnum, KeyringEnum, KillswitchStatusEnum,
                       UserSettingStatusEnum, NotificationStatusEnum, NotificationEnum)
 from ...exceptions import (API403Error, API5002Error, API5003Error,
-                           API8002Error, API9001Error, API10013Error,
+                           API8002Error, API85031Error, API9001Error, API10013Error,
                            APISessionIsNotValidError, APITimeoutError,
                            DefaultOVPNPortsNotFoundError, InsecureConnection,
                            JSONDataError, NetworkConnectionError,
@@ -154,6 +154,9 @@ class ErrorStrategyAuthenticate(ErrorStrategy):
 
     def _handle_8002(self, error, session, *args, **kwargs):
         raise API8002Error(error)
+
+    def _handle_85031(self, error, session, *args, **kwargs):
+        raise API85031Error(error)
 
 
 class ErrorStrategyRefresh(ErrorStrategy):
