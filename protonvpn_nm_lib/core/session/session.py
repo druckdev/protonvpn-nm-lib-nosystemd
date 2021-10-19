@@ -305,6 +305,9 @@ class APISession:
         except KeyError:
             pass
 
+    def update_alternative_routing(self, newvalue):
+        self.__proton_api.enable_alternative_routing = newvalue
+
     @ErrorStrategyLogout
     def logout(self):
         self.__keyring_clear_vpn_data()
