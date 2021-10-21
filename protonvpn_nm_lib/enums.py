@@ -6,7 +6,7 @@ class APIEndpointEnum(Enum):
     LOADS = "/vpn/loads"
     CLIENT_CONFIG = "/vpn/clientconfig"
     STREAMING_SERVICES = "/vpn/streamingservices"
-    NOTIFICATIONS = "/vpn/notifications"
+    NOTIFICATIONS = "/core/v4/notifications"
     LOCATION = "/vpn/location"
 
 
