@@ -316,6 +316,11 @@ class APISession:
 
         self.__proton_user = None
         self.__vpn_data = None
+        self.__clientconfig = None
+        self.__streaming_services = None
+        self.__streaming_icons = None
+        self.__notification_data = None
+        logger.info("Cleared user data")
 
         self.__vpn_logicals = None
         logger.info("Cleared local cache variables")
