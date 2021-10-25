@@ -230,7 +230,7 @@ class BlackfridayNotification(BaseNotificationType):
         if (
             0 in [self.start_time, self.end_time]
         ) or (
-            now > self.start_time and now < self.end_time
+            now < self.start_time or now > self.end_time
         ):
             return False
 

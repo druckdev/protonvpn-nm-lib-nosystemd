@@ -1,4 +1,4 @@
-protonvpn-nm-lib (3.6.0-1) unstable; urgency=medium
+protonvpn-nm-lib (3.6.0-5) unstable; urgency=medium
 
   * Feature: Add notification polling
   * Improve: Human verification at login
