@@ -177,8 +177,8 @@ class EmptyNotificationObject(BaseNotificationType):
         return False
 
 
-class BlackfridayNotification(BaseNotificationType):
-    notification_type = NotificationEnum.BLACK_FRIDAY.value
+class GenericNotification(BaseNotificationType):
+    notification_type = NotificationEnum.GENERIC.value
 
     def __init__(self, data):
         self.icon_paths = set()
