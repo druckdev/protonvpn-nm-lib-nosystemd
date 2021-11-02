@@ -1,3 +1,9 @@
+protonvpn-nm-lib (3.6.1-1) unstable; urgency=medium
+
+  * Hotfix: Update event notifications
+
+ -- Proton Technologies AG <opensource@proton.me>  Tue, 02 Nov 2021 12:30:00 +0000
+
 protonvpn-nm-lib (3.6.0-5) unstable; urgency=medium
 
   * Feature: Add notification polling

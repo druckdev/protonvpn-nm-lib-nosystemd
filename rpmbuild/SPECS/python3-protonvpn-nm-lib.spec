@@ -1,6 +1,6 @@
 %define unmangled_name protonvpn-nm-lib
-%define version 3.6.0
-%define release 5
+%define version 3.6.1
+%define release 1
 
 Prefix: %{_prefix}
 
@@ -60,6 +60,9 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root)
 
 %changelog
+* Tue Nov 02 2021 Proton Technologies AG <opensource@proton.me> 3.6.1-1
+- Hotfix: Update event notifications
+
 * Tue Oct 12 2021 Proton Technologies AG <opensource@proton.me> 3.6.0-5
 - Feature: Add notification polling
 - Improve: Human verification at login

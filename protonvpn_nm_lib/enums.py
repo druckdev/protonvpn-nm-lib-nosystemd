@@ -12,7 +12,7 @@ class APIEndpointEnum(Enum):
 
 class NotificationEnum(Enum):
     EMPTY = "empty"
-    BLACK_FRIDAY = "black_friday"
+    GENERIC = "generic"
 
 
 class NotificationStatusEnum(Enum):
