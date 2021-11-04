@@ -1,4 +1,4 @@
-FROM IMAGE_URL_FED32
+FROM IMAGE_URL_FED35
 ARG git_repo
 ENV git_repo=${git_repo:-GIT_REPO}
 ARG git_branch
