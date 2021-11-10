@@ -1,5 +1,7 @@
 import json
 import os
+from ...logger import logger
+from ... import exceptions
 
 from ...constants import PROTON_XDG_CONFIG_HOME
 from ._base import KeyringBackend
@@ -23,6 +25,18 @@ class KeyringBackendJsonFiles(KeyringBackend):
         f = self.__get_filename_for_key(key)
         if not os.path.exists(f):
             raise KeyError(key)
+        with open(self.__get_filename_for_key(key), 'r') as f:
+            try:
+                return json.load(f)
+            except json.decoder.JSONDecodeError as e:
+                logger.exception(e)
+                raise exceptions.JSONDataEmptyError(e)
+            except TypeError as e:
+                logger.exception(e)
+                raise exceptions.JSONDataNoneError(e)
+            except Exception as e:
+                logger.exception(e)
+                raise exceptions.JSONDataError(e)
 
     def __delitem__(self, key):
         f = self.__get_filename_for_key(key)
