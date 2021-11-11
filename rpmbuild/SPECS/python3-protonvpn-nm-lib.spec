@@ -1,5 +1,5 @@
 %define unmangled_name protonvpn-nm-lib
-%define version 3.6.1
+%define version 3.7.0
 %define release 1
 
 Prefix: %{_prefix}
@@ -34,7 +34,7 @@ Requires: python3-dbus
 Requires: python3-systemd
 Requires: python3-gobject
 Requires: xdg-utils
-Conflicts: protonvpn-cli < 3.10.0, protonvpn-cli < 1.4.0
+Conflicts: protonvpn-cli < 3.11.0, protonvpn-cli < 1.7.0
 
 %{?python_disable_dependency_generator}
 
@@ -60,6 +60,9 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root)
 
 %changelog
+* Tue Nov 11 2021 Proton Technologies AG <opensource@proton.me> 3.7.0-1
+- Improve: Handle accounting issues
+
 * Tue Nov 02 2021 Proton Technologies AG <opensource@proton.me> 3.6.1-1
 - Hotfix: Update event notifications
 

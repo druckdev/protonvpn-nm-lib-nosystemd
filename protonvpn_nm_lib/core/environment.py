@@ -21,6 +21,7 @@ class ExecutionEnvironment(metaclass=Singleton):
         self.__settings = None
         self.__connection_metadata = None
         self.__api_metadata = None
+        self.__accounting = None
 
     @property
     def keyring(self):
@@ -117,6 +118,18 @@ class ExecutionEnvironment(metaclass=Singleton):
     @api_metadata.setter
     def api_metadata(self, newvalue):
         self.__api_metadata = newvalue
+
+    @property
+    def accounting(self):
+        """Return the session to the API"""
+        if self.__accounting is None:
+            from .accounting import Accounting
+            self.__accounting = Accounting.get_backend() # noqa
+        return self.__accounting
+
+    @accounting.setter
+    def accounting(self, newvalue):
+        self.__accounting = newvalue
 
     @property
     def user_agent(self):

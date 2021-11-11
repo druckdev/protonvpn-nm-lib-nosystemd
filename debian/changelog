@@ -1,3 +1,9 @@
+protonvpn-nm-lib (3.7.0-1) unstable; urgency=medium
+
+  * Improve: Handle accounting issues
+
+ -- Proton Technologies AG <opensource@proton.me>  Thu, 11 Nov 2021 16:30:00 +0000
+
 protonvpn-nm-lib (3.6.1-1) unstable; urgency=medium
 
   * Hotfix: Update event notifications

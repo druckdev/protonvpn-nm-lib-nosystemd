@@ -19,24 +19,24 @@ class Utilities:
     @staticmethod
     def ensure_internet_connection_is_available():
         logger.info("Checking for internet connectivity")
-        if ExecutionEnvironment().killswitch != KillswitchStatusEnum.DISABLED:
+        if ExecutionEnvironment().settings.killswitch != KillswitchStatusEnum.DISABLED:
             logger.info("Skipping as killswitch is enabled")
             return
 
         try:
             requests.get(
-                "http://protonstatus.com/",
+                "https://protonstatus.com/",
                 timeout=5,
             )
         except requests.exceptions.Timeout as e:
-            logger.exception("InternetConnectionError: {}".format(e))
-            raise exceptions.InternetConnectionError(
+            logger.exception("NetworkConnectionError: {}".format(e))
+            raise exceptions.NetworkConnectionError(
                 "No internet connection found, request timed out. "
                 "Please make sure you are connected and retry."
             )
         except (requests.exceptions.BaseHTTPError, Exception) as e:
-            logger.exception("InternetConnectionError: {}".format(e))
-            raise exceptions.InternetConnectionError(
+            logger.exception("NetworkConnectionError: {}".format(e))
+            raise exceptions.NetworkConnectionError(
                 "No internet connection. "
                 "Please make sure you are connected and retry."
             )
@@ -45,7 +45,7 @@ class Utilities:
     def ensure_api_is_reacheable():
         logger.info("Checking API connectivity")
 
-        if ExecutionEnvironment().killswitch != KillswitchStatusEnum.DISABLED:
+        if ExecutionEnvironment().settings.killswitch != KillswitchStatusEnum.DISABLED:
             logger.info("Skipping as killswitch is enabled")
             return
 
