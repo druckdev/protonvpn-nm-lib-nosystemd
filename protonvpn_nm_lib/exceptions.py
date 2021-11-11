@@ -5,6 +5,30 @@ class ProtonVPNException(BaseException):
         super(ProtonVPNException, self).__init__(self.message)
 
 
+class AccountingError(ProtonVPNException):
+    """Base accounting exception/error."""
+
+
+class AccountIsDelinquentError(AccountingError):
+    """Account is delinquent (user has unpaid invoices)."""
+
+
+class AccountWasDowngradedError(AccountingError):
+    """Account was downgraded."""
+
+
+class VPNPasswordHasBeenChangedError(AccountingError):
+    """Account password has been changed."""
+
+
+class AccountPasswordHasBeenCompromisedError(AccountingError):
+    """Account password has been compromised."""
+
+
+class ExceededAmountOfConcurrentSessionsError(AccountingError):
+    """Account has exceeded the maximum amount of concurrent sessions."""
+
+
 class APISessionIsNotValidError(ProtonVPNException):
     """
     This exception is raised when a call requires a valid Proton API session,
@@ -112,6 +136,13 @@ class API503Error(ProtonSessionWrapperError):
     """Error 503.
 
     API unreacheable/unavailable, retry connecting to API.
+    """
+
+
+class API2011Error(ProtonSessionWrapperError):
+    """Error 2011.
+
+    Generic API error.
     """
 
 

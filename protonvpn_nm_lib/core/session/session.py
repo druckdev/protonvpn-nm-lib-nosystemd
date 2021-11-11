@@ -16,7 +16,7 @@ from ...enums import (APIEndpointEnum, KeyringEnum, KillswitchStatusEnum,
                       UserSettingStatusEnum)
 from ...exceptions import (API403Error, API5002Error, API5003Error,
                            API8002Error, API9001Error, API10013Error,
-                           API12087Error, API85031Error,
+                           API12087Error, API85031Error, API2011Error,
                            APISessionIsNotValidError, APITimeoutError,
                            DefaultOVPNPortsNotFoundError, InsecureConnection,
                            JSONDataError, NetworkConnectionError,
@@ -114,7 +114,12 @@ class ErrorStrategy:
         time.sleep(hold_request_time)
         return self._call_original_function(session, *args, **kwargs)
 
+    def _handle_2011(self, error, session, *args, **kwargs):
+        logger.info("Catched 9001 error, generic error message: {}".format(error))
+        raise API2011Error(error)
+
     def _handle_9001(self, error, session, *args, **kwargs):
+        logger.info("Catched 9001 error, human verification required")
         raise API9001Error(error)
 
     def _handle_85031(self, error, session, *args, **kwargs):
@@ -434,6 +439,26 @@ class APISession:
         self.ensure_valid()
         return self.__proton_user
 
+    @property
+    def max_connections(self):
+        return int(self.__vpn_data.get("max_connections", 1))
+
+    @property
+    def delinquent(self):
+        return True if self.__vpn_data.get("delinquent", 0) > 2 else False
+
+    @ErrorStrategyNormalCall
+    def get_sessions(self):
+        response = self.__proton_api.api_request(APIEndpointEnum.SESSIONS.value)
+
+        try:
+            return response.get("Sessions", [])
+        except AttributeError:
+            return []
+
+    def refresh_vpn_data(self):
+        self.__vpn_data_fetch_from_api()
+
     @ErrorStrategyNormalCall
     def __vpn_data_fetch_from_api(self):
         self.ensure_valid()
@@ -442,7 +467,10 @@ class APISession:
         self.__vpn_data = {
             'username': api_vpn_data['VPN']['Name'],
             'password': api_vpn_data['VPN']['Password'],
-            'tier': api_vpn_data['VPN']['MaxTier']
+            'tier': api_vpn_data['VPN']['MaxTier'],
+            'max_connections': api_vpn_data['VPN']['MaxConnect'],
+            'delinquent': api_vpn_data['Delinquent'],
+            'warnings': api_vpn_data['Warnings']
         }
 
         # We now have valid VPN data, store it in the keyring

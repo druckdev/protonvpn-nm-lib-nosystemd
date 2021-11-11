@@ -81,7 +81,7 @@ class NetworkManagerClient(ConnectionBackend, NMClientMixin):
         self._pre_setup_connection(kwargs.get("entry_ip"))
         self._add_connection_async(connection)
 
-    def connect(self):
+    def connect(self, attempt_reconnect=False):
         """Connect to VPN.
 
         Returns status of connection in dict form.
@@ -102,18 +102,28 @@ class NetworkManagerClient(ConnectionBackend, NMClientMixin):
         )
         dbus_loop.run()
         if response[ConnectionStartStatusEnum.STATE] != VPNConnectionStateEnum.IS_ACTIVE:
+            logger.info("Unable to connect to VPN")
+            env = ExecutionEnvironment()
             logger.info("Restoring kill switch to previous state")
-            _env = ExecutionEnvironment()
-            _env.killswitch.update_from_user_configuration_menu(
-                KillswitchStatusEnum.HARD
-                if _env.settings.killswitch == KillswitchStatusEnum.HARD
-                else KillswitchStatusEnum.SOFT
-            )
+            if env.settings.killswitch == KillswitchStatusEnum.HARD:
+                env.killswitch.update_from_user_configuration_menu(KillswitchStatusEnum.HARD)
+            else:
+                env.killswitch.update_from_user_configuration_menu(KillswitchStatusEnum.DISABLED)
+                env.ipv6leak.remove_leak_protection()
 
             try:
                 self.disconnect()
             except: # noqa
                 pass
+
+            try:
+                self.ensure_protovnpn_connection_exists(connection)
+            except exceptions.ConnectionNotFound:
+                pass
+
+            logger.info("Ensure that account has expected values")
+            env.accounting.ensure_accounting_has_expected_values()
+
         else:
             self.daemon_reconnector.start_daemon_reconnector()
 
