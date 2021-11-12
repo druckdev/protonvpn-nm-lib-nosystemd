@@ -30,7 +30,7 @@ class DefaultAccounting(Accounting):
         elif self.has_account_been_downgraded:
             raise exceptions.AccountWasDowngradedError("Account has been downgraded")
         elif self.has_vpn_password_changed:
-            raise exceptions.VPNPasswordHasBeenChangedError("VPN password has been changed")
+            raise exceptions.VPNUsernameOrPasswordHasBeenChangedError("VPN password has been changed")
         elif self.has_account_exceeded_max_ammount_of_connections:
             raise exceptions.ExceededAmountOfConcurrentSessionsError(
                 "Too many concurrent sessions"
@@ -38,6 +38,7 @@ class DefaultAccounting(Accounting):
 
     def refresh_vpn_data(self):
         self._previous_tier = self._env.api_session.vpn_tier
+        self._previous_vpn_username = self._env.api_session.vpn_username
         self._previous_vpn_password = self._env.api_session.vpn_password
         self._previous_delinquent = self._env.api_session.delinquent
 
@@ -53,7 +54,10 @@ class DefaultAccounting(Accounting):
 
     @property
     def has_vpn_password_changed(self):
-        return self._previous_vpn_password != self._env.api_session.vpn_password
+        return (
+            self._previous_vpn_password != self._env.api_session.vpn_password
+            or self._previous_vpn_username != self._env.api_session.vpn_username
+        )
 
     @property
     def has_account_exceeded_max_ammount_of_connections(self):
