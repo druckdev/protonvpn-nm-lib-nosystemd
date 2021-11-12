@@ -1,6 +1,6 @@
-protonvpn-nm-lib (3.7.0-2) unstable; urgency=medium
+protonvpn-nm-lib (3.7.0-4) unstable; urgency=medium
 
-  * Improve: Handle accounting issues
+  * Improve: Handle accounting use cases
 
  -- Proton Technologies AG <opensource@proton.me>  Thu, 11 Nov 2021 16:30:00 +0000
 

@@ -170,6 +170,7 @@ class MetadataEnum(Enum):
 
 
 class ConnectionTypeEnum(Enum):
+    FREE = 0
     SERVERNAME = 1
     FASTEST = 2
     RANDOM = 3

@@ -17,8 +17,8 @@ class AccountWasDowngradedError(AccountingError):
     """Account was downgraded."""
 
 
-class VPNPasswordHasBeenChangedError(AccountingError):
-    """Account password has been changed."""
+class VPNUsernameOrPasswordHasBeenChangedError(AccountingError):
+    """Account username or password has been changed."""
 
 
 class AccountPasswordHasBeenCompromisedError(AccountingError):

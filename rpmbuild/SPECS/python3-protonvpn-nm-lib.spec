@@ -1,6 +1,6 @@
 %define unmangled_name protonvpn-nm-lib
 %define version 3.7.0
-%define release 2
+%define release 4
 
 Prefix: %{_prefix}
 
@@ -60,8 +60,8 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root)
 
 %changelog
-* Tue Nov 11 2021 Proton Technologies AG <opensource@proton.me> 3.7.0-2
-- Improve: Handle accounting issues
+* Tue Nov 11 2021 Proton Technologies AG <opensource@proton.me> 3.7.0-4
+- Improve: Handle accounting use cases
 
 * Tue Nov 02 2021 Proton Technologies AG <opensource@proton.me> 3.6.1-1
 - Hotfix: Update event notifications

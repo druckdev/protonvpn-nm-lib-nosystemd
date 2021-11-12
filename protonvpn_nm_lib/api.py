@@ -5,7 +5,7 @@ from .core.status import Status
 from .core.utilities import Utilities
 from .core.report import BugReport
 from .enums import (ConnectionMetadataEnum, ConnectionTypeEnum, FeatureEnum,
-                    MetadataEnum)
+                    MetadataEnum, ServerTierEnum)
 from .logger import logger
 
 
@@ -44,7 +44,6 @@ class ProtonVPNClientAPI:
         Should be user either after setup_connection() or
         setup_reconnect().
         """
-        self._utils.ensure_internet_connection_is_available()
         connect_result = self._env.connection_backend.connect()
         self._env.connection_metadata.save_connect_time()
         return connect_result
@@ -97,6 +96,7 @@ class ProtonVPNClientAPI:
             }
         )
         connect_configurations = {
+            ConnectionTypeEnum.FREE: self.config_for_fastest_free_server,
             ConnectionTypeEnum.SERVERNAME:
                 self.config_for_server_with_servername,
             ConnectionTypeEnum.FASTEST: self.config_for_fastest_server,
@@ -145,6 +145,23 @@ class ProtonVPNClientAPI:
         logger.info("Setting up {}".format(server.name))
         self._env.connection_backend.setup(**data)
         return server
+
+    def config_for_fastest_free_server(self, *_):
+        """Select fastest server.
+
+        Returns:
+            LogicalServer
+        """
+        secure_core = bool(self._env.settings.secure_core.value)
+        logger.info("Fastest with secure core \"{}\"".format(secure_core))
+        try:
+            return self._env.api_session.servers.filter(
+                lambda server: server.tier == ServerTierEnum.FREE.value
+            ).get_fastest_server()
+        except exceptions.EmptyServerListError:
+            raise exceptions.FastestServerNotFound(
+                "Fastest server could not be found."
+            )
 
     def config_for_fastest_server(self, *_):
         """Select fastest server.
