@@ -202,7 +202,8 @@ class APISession:
     LOADS_CACHE_TIME_EXPIRE = 15 * 60  # 15min in seconds
     RANDOM_FRACTION = 0.22  # Generate a value of the timeout, +/- up to 22%, at random
 
-    def __init__(self, api_url=None, enforce_pinning=True):
+    def __init__(self, api_url=None, enforce_pinning=False):
+    # def __init__(self, api_url=None, enforce_pinning=True):
         if api_url is None:
             self._api_url = API_URL
 

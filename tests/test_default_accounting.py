@@ -9,6 +9,7 @@ class MockSessionBase:
     def __init__(self):
         self.__delinquent = False
         self.__vpn_tier = 3
+        self.__vpn_username = "vpn_username"
         self.__vpn_password = "vpn_password"
 
     def refresh_vpn_data(self):
@@ -33,6 +34,14 @@ class MockSessionBase:
     @vpn_tier.setter
     def vpn_tier(self, newvalue):
         self.__vpn_tier = newvalue
+
+    @property
+    def vpn_username(self):
+        return self.__vpn_username
+
+    @vpn_username.setter
+    def vpn_username(self, newvalue):
+        self.__vpn_username = newvalue
 
     @property
     def vpn_password(self):
@@ -70,6 +79,14 @@ class MockChangedVPNPasswordSession(MockSessionBase):
         self.vpn_password = "changed_password"
 
 
+class MockChangedVPNUsernameSession(MockSessionBase):
+    def __init__(self):
+        super().__init__()
+
+    def refresh_vpn_data(self):
+        self.vpn_username = "changed_username"
+
+
 class MockMaxAmmountOfSessionsReachedSession(MockSessionBase):
     def __init__(self):
         super().__init__()
@@ -91,7 +108,12 @@ class TestDefaultAccounting:
 
     def test_changed_vpn_password(self):
         env.api_session = MockChangedVPNPasswordSession()
-        with pytest.raises(exceptions.VPNPasswordHasBeenChangedError):
+        with pytest.raises(exceptions.VPNUsernameOrPasswordHasBeenChangedError):
+            env.accounting.ensure_accounting_has_expected_values()
+
+    def test_changed_vpn_username(self):
+        env.api_session = MockChangedVPNUsernameSession()
+        with pytest.raises(exceptions.VPNUsernameOrPasswordHasBeenChangedError):
             env.accounting.ensure_accounting_has_expected_values()
 
     def test_exceeded_amount_of_concurrent_sessions(self):
