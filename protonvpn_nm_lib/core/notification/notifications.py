@@ -67,7 +67,7 @@ class BaseNotificationType(SubclassesMixin):
 
     @classmethod
     def factory(cls, data, attribute=None):
-        if not data:
+        if not data or len(data) == 0:
             return cls._get_subclasses_dict("notification_type")[
                 NotificationEnum.EMPTY.value
             ](data)

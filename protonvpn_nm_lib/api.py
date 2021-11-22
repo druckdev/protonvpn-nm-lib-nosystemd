@@ -174,7 +174,8 @@ class ProtonVPNClientAPI:
         try:
             return self._env.api_session.servers.filter(
                 lambda server:
-                    (
+                    server.tier <= ExecutionEnvironment().api_session.vpn_tier
+                    and (
                         secure_core
                         and FeatureEnum.SECURE_CORE in server.features
                     ) or (
@@ -199,7 +200,8 @@ class ProtonVPNClientAPI:
         try:
             return self._env.api_session.servers.filter(
                 lambda server:
-                server.exit_country.lower() == country_code.lower()
+                server.tier <= ExecutionEnvironment().api_session.vpn_tier
+                and server.exit_country.lower() == country_code.lower()
                 and (
                     (
                         secure_core
@@ -240,7 +242,8 @@ class ProtonVPNClientAPI:
         try:
             return self._env.api_session.servers.filter(
                 lambda server: (
-                    all(
+                    server.tier <= ExecutionEnvironment().api_session.vpn_tier
+                    and all(
                         chosen_feature
                         in server.features
                         for chosen_feature
@@ -263,7 +266,9 @@ class ProtonVPNClientAPI:
         """
         try:
             return self._env.api_session.servers.filter(
-                lambda server: server.name.lower() == servername.lower() # noqa
+                lambda server:
+                server.tier <= ExecutionEnvironment().api_session.vpn_tier
+                and server.name.lower() == servername.lower() # noqa
             ).get_fastest_server()
         except exceptions.EmptyServerListError:
             raise exceptions.ServernameServerNotFound(

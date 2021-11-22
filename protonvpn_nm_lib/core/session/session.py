@@ -441,11 +441,17 @@ class APISession:
 
     @property
     def max_connections(self):
-        return int(self._vpn_data["max_connections"])
+        try:
+            return int(self._vpn_data["max_connections"])
+        except KeyError:
+            return 20
 
     @property
     def delinquent(self):
-        return True if self._vpn_data["delinquent"] > 2 else False
+        try:
+            return True if self._vpn_data["delinquent"] > 2 else False
+        except KeyError:
+            return False
 
     @ErrorStrategyNormalCall
     def get_sessions(self):
