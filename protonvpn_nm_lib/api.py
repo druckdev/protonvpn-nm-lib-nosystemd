@@ -27,7 +27,7 @@ class ProtonVPNClientAPI:
             password (string)
             human_verification (optional; list|tuple)
         """
-        self._utils.ensure_connectivity()
+        self._utils.ensure_internet_connection_is_available()
         self._env.api_session.authenticate(username, password, human_verification)
 
     def logout(self):
