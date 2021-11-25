@@ -14,7 +14,6 @@ class Utilities:
         utils = Utilities()
 
         utils.ensure_internet_connection_is_available()
-        utils.ensure_api_is_reacheable()
 
     @staticmethod
     def ensure_internet_connection_is_available():
@@ -39,30 +38,6 @@ class Utilities:
             raise exceptions.NetworkConnectionError(
                 "No internet connection. "
                 "Please make sure you are connected and retry."
-            )
-
-    @staticmethod
-    def ensure_api_is_reacheable():
-        logger.info("Checking API connectivity")
-
-        if ExecutionEnvironment().settings.killswitch != KillswitchStatusEnum.DISABLED:
-            logger.info("Skipping as killswitch is enabled")
-            return
-
-        try:
-            requests.get(
-                "https://api.protonvpn.ch/tests/ping", timeout=10
-            )
-        except requests.exceptions.Timeout as e:
-            logger.exception("APITimeoutError: {}".format(e))
-            raise exceptions.APITimeoutError(
-                "API unreacheable. Connection timed out."
-            )
-        except (requests.exceptions.RequestException, Exception) as e:
-            logger.exception("UnreacheableAPIError: {}".format(e))
-            raise exceptions.UnreacheableAPIError(
-                "Couldn't reach Proton API."
-                "This might happen due to connection issues or network blocks."
             )
 
     @staticmethod

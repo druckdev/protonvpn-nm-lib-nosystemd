@@ -82,7 +82,7 @@ class ProtonVPNClientAPI:
             raise exceptions.UserSessionNotFound(
                 "User session was not found, please login first."
             )
-        self._utils.ensure_connectivity()
+        self._utils.ensure_internet_connection_is_available()
 
         (
             _connection_type,
@@ -401,7 +401,7 @@ class ProtonVPNClientAPI:
         1) It checks if there is internet connection
         2) It checks if API can be reached
         """
-        self._utils.ensure_connectivity()
+        self._utils.ensure_internet_connection_is_available()
 
     def get_bug_report(self):
         """Get bug report object."""
