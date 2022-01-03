@@ -147,4 +147,4 @@ Description=ProtonVPN Reconnector
 
 [Service]
 ExecStart=EXEC_START
-""".format(APP_VERSION) # here
+""".format(APP_VERSION) # here, see http://openrc.run/ to convert
