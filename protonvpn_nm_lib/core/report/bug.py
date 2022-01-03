@@ -11,7 +11,7 @@ ZERO = datetime.timedelta(0)
 HOUR = datetime.timedelta(hours=1)
 
 
-class BugReport(metaclass=Singleton):
+class BugReport(metaclass=Singleton): # here
     DELTA_TIME_IN_DAYS = 3
     COMPILED_LOG_EPOCH_RE = re.compile(r"(\[\d+\.\d+\])")
     IS_USER_UNIT = False
@@ -54,7 +54,7 @@ class BugReport(metaclass=Singleton):
             systemd_unit (string): systemd .service name
             filepath (string): filepath to log file
         """
-        from systemd import journal
+        from systemd import journal # here
 
         _journal = journal.Reader()
 

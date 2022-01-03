@@ -24,7 +24,7 @@ class NetworkManagerClient(ConnectionBackend, NMClientMixin):
         super().__init__()
         self.__virtual_device_name = VIRTUAL_DEVICE_NAME
         self.__vpn_configuration = None
-        self.daemon_reconnector = DbusReconnect()
+        self.daemon_reconnector = DbusReconnect() # here
 
     @property
     def vpn_configuration(self):

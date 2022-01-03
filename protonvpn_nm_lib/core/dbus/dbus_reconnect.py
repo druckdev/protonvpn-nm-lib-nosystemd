@@ -4,8 +4,7 @@ import sys
 
 import protonvpn_nm_lib
 
-from ...constants import (LOCAL_SERVICE_FILEPATH,
-                          SERVICE_TEMPLATE, XDG_CONFIG_SYSTEMD_USER)
+from ...constants import (LOCAL_SERVICE_FILEPATH, SERVICE_TEMPLATE, XDG_CONFIG_SYSTEMD_USER) # here
 from ...enums import DaemonReconnectorEnum
 from ...logger import logger
 from ..subprocess_wrapper import subprocess
@@ -16,7 +15,7 @@ class DbusReconnect:
         DaemonReconnectorEnum.START,
         DaemonReconnectorEnum.STOP,
         DaemonReconnectorEnum.DAEMON_RELOAD
-    ]
+    ] # here, see https://wiki.archlinux.org/title/OpenRC#Usage
 
     def __init__(self):
         pass
@@ -121,7 +120,7 @@ class DbusReconnect:
         """
         logger.info("Checking daemon reconnector status")
         check_daemon = subprocess.run(
-            ["systemctl", "status", "--user", "protonvpn_reconnect"],
+            ["systemctl", "status", "--user", "protonvpn_reconnect"], # here
             stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
         decoded_stdout = check_daemon.stdout.decode()
@@ -160,13 +159,13 @@ class DbusReconnect:
             raise Exception("Invalid daemon command \"{}\"".format(command))
 
         call_daemon = subprocess.run(
-            ["systemctl", command.value, "--user", "protonvpn_reconnect"],
+            ["systemctl", command.value, "--user", "protonvpn_reconnect"], # here
             stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
         if command == DaemonReconnectorEnum.DAEMON_RELOAD:
             call_daemon = subprocess.run(
                 [
-                    "systemctl",
+                    "systemctl", # here
                     "--user",
                     DaemonReconnectorEnum.DAEMON_RELOAD.value
                 ],
